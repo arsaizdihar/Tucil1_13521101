@@ -69,10 +69,12 @@ void get_input(double arr[4])
       // mengambil 4 kartu secara random
       for (int i = 0; i < 4; i++)
       {
-        arr[i] = rand() % 13 + 1;
+        int rand_num = rand() % 13 + 1;
+        arr[i] = rand_num;
+        raw[i] = inputs[rand_num - 1];
       }
     }
-    printf("Angka yang terpilih: %.0lf, %.0lf, %.0lf, %.0lf\n", arr[0], arr[1], arr[2], arr[3]);
+    printf("Kartu yang terpilih: %s, %s, %s, %s\n", raw[0].c_str(), raw[1].c_str(), raw[2].c_str(), raw[3].c_str());
     break;
   }
 }
@@ -302,17 +304,17 @@ void show_answers(double nums[4])
   cout << "Execution time: " << duration_sec << " seconds\n";
 
   // mengambil input dari user untuk menyimpan solusi/tidak
-  string ans;
+  char ans;
   cout << "Apakah ingin menyimpan solusi (y/N)? ";
+  cin >> ans;
   cin.ignore();
-  getline(cin, ans);
-  if (ans == "y" || ans == "Y")
+  if (ans == 'y' || ans == 'Y')
   {
     // menyimpan solusi ke file
     string name;
     cout << "Masukkan nama file: ";
     getline(cin, name);
-    ofstream file(name);
+    ofstream file("test/" + name);
     file << nums[0] << " " << nums[1] << " " << nums[2] << " " << nums[3] << endl;
     file << answers.size() << " solutions found\n";
     for (int i = 0; i < answers.size(); i++)
@@ -320,6 +322,7 @@ void show_answers(double nums[4])
       file << answers[i] << endl;
     }
     file.close();
+    cout << "Solusi berhasil disimpan ke file test/" << name << endl;
   }
 }
 
