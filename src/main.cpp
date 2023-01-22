@@ -12,6 +12,7 @@ char ops[] = {'*', '/', '+', '-'};
 
 void get_input(double arr[4])
 {
+  // menerima input pilihan dari user
   string raw[4];
   while (true)
   {
@@ -20,6 +21,9 @@ void get_input(double arr[4])
     cout << "Masukkan angka 1 atau 2: ";
     int chosen;
     cin >> chosen;
+    cin.ignore();
+
+    // validasi input pilihan
     if (chosen < 1 || chosen > 2)
     {
       cout << "Pilihan tidak valid. Silahkan coba lagi.\n";
@@ -28,6 +32,7 @@ void get_input(double arr[4])
 
     if (chosen == 1)
     {
+      // mengambil masukan 4 kartu dari user (manual)
       while (true)
       {
         bool input_valid = true;
@@ -36,6 +41,7 @@ void get_input(double arr[4])
         {
           cin >> raw[i];
         }
+        cin.ignore();
         for (int i = 0; i < 4; i++)
         {
           bool valid = false;
@@ -60,6 +66,7 @@ void get_input(double arr[4])
     }
     else
     {
+      // mengambil 4 kartu secara random
       for (int i = 0; i < 4; i++)
       {
         arr[i] = rand() % 13 + 1;
@@ -87,6 +94,8 @@ double count_by_op(double a, double b, char op)
 
 void try_every_paranthesis(vector<string> *answers, double nums[4], char ops[3])
 {
+  // semua peletakan kurung yang mungkin
+  // (x op x) op (x op x), ((x op x) op x) op x, (x op (x op x)) op x, x op ((x op x) op x), dan x op (x op (x op x))
   int paranthesis[5][2][2] = {
       {{0, 1}, {2, 3}},
       {{0, 1}, {0, 2}},
@@ -94,26 +103,27 @@ void try_every_paranthesis(vector<string> *answers, double nums[4], char ops[3])
       {{1, 2}, {1, 3}},
       {{2, 3}, {1, 3}}};
 
+  // mencoba semua kurung
   for (int i = 0; i < 5; i++)
   {
     int *par1 = paranthesis[i][0];
     int *par2 = paranthesis[i][1];
     int ops_idx[3];
-    ops_idx[0] = par1[1] - 1;
-    if (par1[1] == par2[1])
-    {
+    ops_idx[0] = par1[1] - 1; // operasi pertama merupakan operasi yang ada pada kurung pertama
+    if (par1[1] == par2[1])   // operasi kedua merupakan operasi yang ada pada kurung kedua
       ops_idx[1] = par2[0];
-    }
     else
-    {
       ops_idx[1] = par2[1] - 1;
-    }
-    ops_idx[2] = 3 - ops_idx[0] - ops_idx[1];
 
+    ops_idx[2] = 3 - ops_idx[0] - ops_idx[1]; // operasi ketiga merupakan operasi yang tersisa
+
+    // menghitung operasi pertama
     double res1 = count_by_op(nums[par1[0]], nums[par1[1]], ops[ops_idx[0]]);
-    double next1[3];
     bool dec1 = false;
     bool dec2 = false;
+
+    // menentukan 3 angka hasil operasi pertama
+    double next1[3];
     for (int i = 0; i < 3; i++)
     {
       if (i < par1[0])
@@ -123,6 +133,7 @@ void try_every_paranthesis(vector<string> *answers, double nums[4], char ops[3])
       else
         next1[i] = nums[i + 1];
     }
+
     if (par2[0] >= par1[1])
     {
       par2[0]--;
@@ -133,7 +144,11 @@ void try_every_paranthesis(vector<string> *answers, double nums[4], char ops[3])
       par2[1]--;
       dec2 = true;
     }
+
+    // menghitung operasi kedua
     double res2 = count_by_op(next1[par2[0]], next1[par2[1]], ops[ops_idx[1]]);
+
+    // menentukan 2 angka hasil operasi kedua
     double next2[2];
     for (int i = 0; i < 2; i++)
     {
@@ -154,7 +169,11 @@ void try_every_paranthesis(vector<string> *answers, double nums[4], char ops[3])
       par2[0]++;
     if (dec2)
       par2[1]++;
+
+    // hasil akhir
     double res3 = count_by_op(next2[0], next2[1], ops[ops_idx[2]]);
+
+    // jika hasil akhir adalah 24, tambahkan jawaban ke list jawaban
     if (res3 == 24)
     {
       string ans = "";
@@ -190,10 +209,11 @@ void try_every_paranthesis(vector<string> *answers, double nums[4], char ops[3])
 void show_answers(double nums[4])
 {
   auto start = chrono::high_resolution_clock::now();
-  vector<array<int, 4>> possibilities;
-  vector<array<char, 3>> poss_ops;
-  vector<string> answers;
+  vector<array<int, 4>> possibilities; // semua urutan indeks angka yang mungkin
+  vector<array<char, 3>> poss_ops;     // semua operasi yang mungkin
+  vector<string> answers;              // untuk menyimpan semua solusi
 
+  // mencari semua kemungkinan urutan indeks angka
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
@@ -229,6 +249,8 @@ void show_answers(double nums[4])
       }
     }
   }
+
+  // mencari semua kemungkinan operasi
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
@@ -241,6 +263,7 @@ void show_answers(double nums[4])
     }
   }
 
+  // mencoba semua kemungkinan berdasarkan urutan angka, operasi, dan kurung
   for (int i = 0; i < possibilities.size(); i++)
   {
     for (int j = 0; j < poss_ops.size(); j++)
@@ -257,10 +280,13 @@ void show_answers(double nums[4])
       try_every_paranthesis(&answers, cur_nums, cur_ops);
     }
   }
+
+  // menghitung waktu eksekusi
   auto end = chrono::high_resolution_clock::now();
   auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
   double duration_sec = (double)duration.count() / 1000000;
 
+  // menampilkan hasil
   if (answers.size() == 0)
   {
     cout << "No solution found\n";
@@ -274,12 +300,15 @@ void show_answers(double nums[4])
     cout << answers[i] << endl;
   }
   cout << "Execution time: " << duration_sec << " seconds\n";
+
+  // mengambil input dari user untuk menyimpan solusi/tidak
   string ans;
   cout << "Apakah ingin menyimpan solusi (y/N)? ";
   cin.ignore();
   getline(cin, ans);
   if (ans == "y" || ans == "Y")
   {
+    // menyimpan solusi ke file
     string name;
     cout << "Masukkan nama file: ";
     getline(cin, name);
@@ -296,7 +325,10 @@ void show_answers(double nums[4])
 
 int main()
 {
+  // set random seed
   srand(time(NULL));
+
+  // jalankan program
   double nums[4];
   get_input(nums);
   show_answers(nums);
